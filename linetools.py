@@ -20,7 +20,7 @@ def eqwidth(filename,wavelength1,wavelength2,wavelength3,wavelength4):
 	filename 	- SDSS spectra .fits filename entered as a string. You may
                   specify entire path as a string,or if file is located in the
                   current working directory, simply the filename
-                  (e.g. 'SDSS-12345.fits')
+                  (e.g. 'plate-fiber-mjd.fits')
 
 	wavelength1 - wavelength value where continuum region to the left of the
                   spectral feature begins.
@@ -52,46 +52,53 @@ def eqwidth(filename,wavelength1,wavelength2,wavelength3,wavelength4):
 
 	# Normalize flux by dividing flux array by mean flux value over relatively quiet
 	# continuum region
-	indx = np.where((lmbda > 8250) & (lmbda < 8350))
-	avgval = flux[indx].mean()
-	nflux = flux/avgval
+	indx = np.where((lmbda >= 8250) & (lmbda <= 8350))
+	avgval = np.mean(flux[indx])
+	nflux = np.array(flux)/avgval  # changed to np array, test to see if it
+                                   # makes a difference...
 
-
-	# Index for continuum region where line feature is found
+	# Index for the entire line feature (line + wings)
 	fuindx = np.where((lmbda >= wavelength1) & (lmbda <= wavelength4))
 
-	# Index for the line feature itself
+	# Index for the line feature 'wings'
 	coindx = np.where((lmbda >= wavelength1) & (lmbda <= wavelength2)) | ((lmbda >= wavelength3) & (lmbda <= wavelength4))
 
-	# Isolate the line feature wavelength region
+	# Isolate the wavelength region of the line feature 'wings'.
 	x1 = lmbda[coindx]
 
-	#Isolate the normalized flux over the line feature wavelength region
+	#Isolate the normalized flux over wavelength region of the feature wings.
 	y1 = nflux[coindx]
 
-	#fit 1st degree polynomial to the line feature
+	# get 1st degree polynomial coefficients to wing region flux to create continuum baseline
 	m,c = np.polyfit(x1,y1,1)
 
 	#print m,c
-	#rms = sqrt( mean( (m*x1 + c - y1)**2 ) )
 
+    #find error the continuum baseline.
+	rmse = sqrt( mean( (m*x1 + c - y1)**2 ) )
+
+    # reassign wavelength and flux values to correspond only to line feature    region
 	lmbda = lmbda[fuindx]
 	flux = nflux[fuindx]
 
-
+    # assign infinitesimal/wavelength sampling.
 	dlmbda= lmbda[2]-lmbda[1]
-	fitl = m*lmbda + c
+
+    #create wavelength array corresponding to continuum baseline
+    fitline = m*lmbda + c
 
 
 
 	ewindx = np.where((lmbda >= wavelength2) & (lmbda <= wavelength3))
-	eqwi = sum(1-nflux[ewindx])*dlmbda
+	eqwi = np.sum(1-np.array(nflux[ewindx]))*dlmbda
 
 	# For error
 	#fx1, err = mcerr(wav,dat,w2,w3,m,c,rms)
 
 	return eqwi
 
+
+def mcerror( ):
 
 #Calculate line height of spectral emission feature
 def line_height(filename,wavelength1,wavelength2,wavelength3,wavelength4):
