@@ -64,10 +64,10 @@ def eqwidth(filename,wavelength1,wavelength2,wavelength3,wavelength4):
 	coindx = np.where((lmbda >= wavelength1) & (lmbda <= wavelength2)) | ((lmbda >= wavelength3) & (lmbda <= wavelength4))
 
 	# Isolate the wavelength region of the line feature 'wings'.
-	x1 = lmbda[coindx]
+	x1 = lmbda[coindex]
 
 	#Isolate the normalized flux over wavelength region of the feature wings.
-	y1 = nflux[coindx]
+	y1 = nflux[coindex]
 
 	# get 1st degree polynomial coefficients to wing region flux to create continuum baseline
 	m,c = np.polyfit(x1,y1,1)
@@ -77,28 +77,36 @@ def eqwidth(filename,wavelength1,wavelength2,wavelength3,wavelength4):
     #find error the continuum baseline.
 	rmse = sqrt( mean( (m*x1 + c - y1)**2 ) )
 
-    # reassign wavelength and flux values to correspond only to line feature    region
-	lmbda = lmbda[fuindx]
-	flux = nflux[fuindx]
+    # reassign wavelength and flux values to correspond to entire line feature  region
+	lmbda = lmbda[fuindex]
+	flux = nflux[fuindex]
 
     # assign infinitesimal/wavelength sampling.
 	dlmbda= lmbda[2]-lmbda[1]
 
     #create wavelength array corresponding to continuum baseline
-    fitline = m*lmbda + c
+    fitline = m * lmbda + c
 
-
-
-	ewindx = np.where((lmbda >= wavelength2) & (lmbda <= wavelength3))
-	eqwi = np.sum(1-np.array(nflux[ewindx]))*dlmbda
+	ewindex = np.where((lmbda >= wavelength2) & (lmbda <= wavelength3))
+	eqwi = np.sum(1-np.array(nflux[ewindex]))*dlmbda
 
 	# For error
-	#fx1, err = mcerr(wav,dat,w2,w3,m,c,rms)
+	ewidth, error = mcerror(lmbda,nflux,w2,w3,m,c,rmse)
 
-	return eqwi
+	return ewidth , error
 
 
-def mcerror( ):
+def mcerror(lmbda,nflux,wavelength1,wavelength2,m,c,rmse):
+    trials = 3000
+    guess = []
+    dlmbda = lmbda[2]-lmbda[1]
+
+    for in in range(trials):
+        fitline = m * lmbda + c + np.uniform(-1,1) * rmse
+        fx = np.sum(1-nflux[ewindex])
+        guess.append(fx)
+
+    return np.mean(guess), np.std(guess)
 
 #Calculate line height of spectral emission feature
 def line_height(filename,wavelength1,wavelength2,wavelength3,wavelength4):
