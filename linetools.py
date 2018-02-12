@@ -58,16 +58,16 @@ def eqwidth(filename,wavelength1,wavelength2,wavelength3,wavelength4):
                                    # makes a difference...
 
 	# Index for the entire line feature (line + wings)
-	fuindx = np.where((lmbda >= wavelength1) & (lmbda <= wavelength4))
+	lineindex = np.where((lmbda >= wavelength1) & (lmbda <= wavelength4))
 
 	# Index for the line feature 'wings'
-	coindx = np.where((lmbda >= wavelength1) & (lmbda <= wavelength2)) | ((lmbda >= wavelength3) & (lmbda <= wavelength4))
+	continuumindex = np.where((lmbda >= wavelength1) & (lmbda <= wavelength2)) | ((lmbda >= wavelength3) & (lmbda <= wavelength4))
 
 	# Isolate the wavelength region of the line feature 'wings'.
-	x1 = lmbda[coindex]
+	x1 = lmbda[continuumindex]
 
 	#Isolate the normalized flux over wavelength region of the feature wings.
-	y1 = nflux[coindex]
+	y1 = nflux[continuumindex]
 
 	# get 1st degree polynomial coefficients to wing region flux to create continuum baseline
 	m,c = np.polyfit(x1,y1,1)
@@ -75,25 +75,25 @@ def eqwidth(filename,wavelength1,wavelength2,wavelength3,wavelength4):
 	#print m,c
 
     #find error the continuum baseline.
-	rmse = sqrt( mean( (m*x1 + c - y1)**2 ) )
+	rmse = np.sqrt( np.mean( (m*x1 + c - y1)**2 ) )
 
     # reassign wavelength and flux values to correspond to entire line feature  region
-	lmbda = lmbda[fuindex]
-	flux = nflux[fuindex]
+	lmbda = lmbda[lineindex]
+	flux = nflux[lineindex]
 
-    # assign infinitesimal/wavelength sampling.
+    # assign infinitesimal/wavelength (wavelength sampling rate) to variable.
 	dlmbda= lmbda[2]-lmbda[1]
 
-    #create wavelength array corresponding to continuum baseline
+    # Create flux array corresponding to continuum baseline
     fitline = m * lmbda + c
 
 	ewindex = np.where((lmbda >= wavelength2) & (lmbda <= wavelength3))
-	eqwi = np.sum(1-np.array(nflux[ewindex]))*dlmbda
+	eqwi = np.sum(1-np.array(nflux[ewindex]) ) * dlmbda
 
 	# For error
-	ewidth, error = mcerror(lmbda,nflux,w2,w3,m,c,rmse)
+	ewidth, error = mcerror(lmbda,nflux,wavelength2,wavelength3,m,c,rmse)
 
-	return ewidth , error
+	return eqwi , error
 
 
 def mcerror(lmbda,nflux,wavelength1,wavelength2,m,c,rmse):
@@ -101,9 +101,9 @@ def mcerror(lmbda,nflux,wavelength1,wavelength2,m,c,rmse):
     guess = []
     dlmbda = lmbda[2]-lmbda[1]
 
-    for in in range(trials):
+    for i in range(trials):
         fitline = m * lmbda + c + np.uniform(-1,1) * rmse
-        fx = np.sum(1-nflux[ewindex])
+        fx = np.sum(1-nflux[ewindex]) * dlmbda
         guess.append(fx)
 
     return np.mean(guess), np.std(guess)
