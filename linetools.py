@@ -97,9 +97,10 @@ def eqwidth(filename,wavelength1,wavelength2,wavelength3,wavelength4):
 
 
 def mcerror(lmbda,nflux,wavelength1,wavelength2,m,c,rmse):
-    trials = 3000
-    guess = []
-    dlmbda = lmbda[2]-lmbda[1]
+    trials  = 3000
+    guess   = []
+    ewindex = np.where((lmbda >= wavelength1) & (lmbda <= wavelength2))
+    dlmbda  = lmbda[2]-lmbda[1]
 
     for i in range(trials):
         fitline = m * lmbda + c + np.uniform(-1,1) * rmse
