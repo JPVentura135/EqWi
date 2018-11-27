@@ -18,7 +18,7 @@ def eqwidth(filename,wavelength1,wavelength2,wavelength3,wavelength4):
     ====================
 
     filename 	- SDSS spectra .fits filename entered as a string. You may
-                  specify entire path as a string,or if file is located in the
+                  specify entire path as a string or if file is located in the
                   current working directory, simply the filename
                   (e.g. 'plate-fiber-mjd.fits')
 
@@ -45,6 +45,7 @@ def eqwidth(filename,wavelength1,wavelength2,wavelength3,wavelength4):
     # Open .fits file
     hdu = fits.open(filename)
 
+    
     # Define wavelength and flux arrays by accessing .fits sloan data
     lmbda = 10**np.array(hdu[1].data['loglam'])
     flux = hdu[1].data['flux']
