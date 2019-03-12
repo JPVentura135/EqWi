@@ -1,4 +1,4 @@
-l# Jean-paul Ventura
+# Jean-paul Ventura
 # January 12, 2017
 # Modified: February 20th, 2016
 
