@@ -1,6 +1,6 @@
 # EqWi (Equivalent Widths):
 
-https://github.com/jvntra/EqWi/releases/latest
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3404215.svg)](https://doi.org/10.5281/zenodo.3404215)
 
 Python module containing functionality to compute the spectral line height and  spectral equivalent width of any given spectral emission/absorption line using astropy.io and numpy libraries. By Jean-Paul Ventura 
 
